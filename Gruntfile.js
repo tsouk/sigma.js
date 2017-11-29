@@ -38,10 +38,14 @@ module.exports = function(grunt) {
     'src/renderers/canvas/sigma.canvas.labels.def.js',
     'src/renderers/canvas/sigma.canvas.hovers.def.js',
     'src/renderers/canvas/sigma.canvas.nodes.def.js',
+    'src/renderers/canvas/sigma.canvas.nodes.border.js',
+    'src/renderers/canvas/sigma.canvas.nodes.sakura.js',
+
     'src/renderers/canvas/sigma.canvas.edges.def.js',
-    'src/renderers/canvas/sigma.canvas.edges.dotCurve.js',
+    'src/renderers/canvas/sigma.canvas.edges.curve.js',
     'src/renderers/canvas/sigma.canvas.edges.arrow.js',
-    'src/renderers/canvas/sigma.canvas.edges.dotCurvedArrow.js',
+    'src/renderers/canvas/sigma.canvas.edges.curvedArrow.js',
+    'src/renderers/canvas/sigma.canvas.edges.rightAngle.js',
     'src/renderers/canvas/sigma.canvas.edgehovers.def.js',
     'src/renderers/canvas/sigma.canvas.edgehovers.curve.js',
     'src/renderers/canvas/sigma.canvas.edgehovers.arrow.js',
@@ -83,7 +87,6 @@ module.exports = function(grunt) {
     'plugins.relativeSize',
     'renderers.customEdgeShapes',
     'renderers.customShapes',
-    'renderers.edgeDots',
     'renderers.edgeLabels',
     'renderers.parallelEdges',
     'renderers.snapshot',
@@ -91,7 +94,7 @@ module.exports = function(grunt) {
   ];
 
   var pluginFiles = [],
-      subGrunts = {};
+    subGrunts = {};
 
   plugins.forEach(function(p) {
     var dir = 'plugins/sigma.' + p + '/';

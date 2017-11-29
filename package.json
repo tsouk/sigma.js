@@ -29,6 +29,7 @@
     "start": "http-server -p 8000",
     "test": "grunt travis",
     "build": "grunt build",
-    "prepublish": "grunt npmPrePublish"
+    "prepublish": "grunt npmPrePublish",
+    "build-dev": "grunt concat"
   }
 }
