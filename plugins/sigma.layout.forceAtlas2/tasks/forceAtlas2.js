@@ -7,14 +7,17 @@ var uglify = require('uglify-js');
 
 // Shorteners
 function minify(string) {
-  return uglify.minify(string, {fromString: true}).code;
+  //return string;
+  return uglify.minify(string, {
+    fromString: true
+  }).code;
 }
 
 // Crushing function
 function crush(fnString) {
   var pattern,
-      i,
-      l;
+    i,
+    l;
 
   var np = [
     'x',

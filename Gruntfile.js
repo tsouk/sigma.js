@@ -94,7 +94,7 @@ module.exports = function(grunt) {
   ];
 
   var pluginFiles = [],
-      subGrunts = {};
+    subGrunts = {};
 
   plugins.forEach(function(p) {
     var dir = 'plugins/sigma.' + p + '/';
