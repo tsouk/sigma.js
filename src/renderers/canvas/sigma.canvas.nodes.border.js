@@ -28,10 +28,6 @@
      true
     );
 
-<<<<<<< HEAD
-=======
-    context.globalCompositeOperation = 'exclusion';
->>>>>>> d2a3f620a3d44b35a8e955e958f50eb4354040ef
     context.closePath();
     context.fill();
 
