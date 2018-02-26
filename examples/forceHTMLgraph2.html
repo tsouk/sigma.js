@@ -1,0 +1,422 @@
+<!-- START SIGMA IMPORTS -->
+<script src="../src/sigma.core.js"></script>
+<script src="../src/conrad.js"></script>
+<script src="../src/utils/sigma.utils.js"></script>
+<script src="../src/utils/sigma.polyfills.js"></script>
+<script src="../src/sigma.settings.js"></script>
+<script src="../src/classes/sigma.classes.dispatcher.js"></script>
+<script src="../src/classes/sigma.classes.configurable.js"></script>
+<script src="../src/classes/sigma.classes.graph.js"></script>
+<script src="../src/classes/sigma.classes.camera.js"></script>
+<script src="../src/classes/sigma.classes.quad.js"></script>
+<script src="../src/classes/sigma.classes.edgequad.js"></script>
+<script src="../src/captors/sigma.captors.mouse.js"></script>
+<script src="../src/captors/sigma.captors.touch.js"></script>
+<script src="../src/renderers/sigma.renderers.canvas.js"></script>
+<script src="../src/renderers/sigma.renderers.webgl.js"></script>
+<script src="../src/renderers/sigma.renderers.svg.js"></script>
+<script src="../src/renderers/sigma.renderers.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.nodes.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.def.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.fast.js"></script>
+<script src="../src/renderers/webgl/sigma.webgl.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.labels.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.hovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.nodes.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edges.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.def.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curve.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.arrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.edgehovers.curvedArrow.js"></script>
+<script src="../src/renderers/canvas/sigma.canvas.extremities.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.utils.js"></script>
+<script src="../src/renderers/svg/sigma.svg.nodes.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.edges.curve.js"></script>
+<script src="../src/renderers/svg/sigma.svg.labels.def.js"></script>
+<script src="../src/renderers/svg/sigma.svg.hovers.def.js"></script>
+<script src="../src/middlewares/sigma.middlewares.rescale.js"></script>
+<script src="../src/middlewares/sigma.middlewares.copy.js"></script>
+<script src="../src/misc/sigma.misc.animation.js"></script>
+<script src="../src/misc/sigma.misc.bindEvents.js"></script>
+<script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
+<script src="../src/misc/sigma.misc.drawHovers.js"></script>
+<!-- END SIGMA IMPORTS -->
+<div id="container">
+    <style>
+    #graph-container {
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        position: absolute;
+    }
+    </style>
+    <div id="graph-container"></div>
+    <div style="display: none;">
+        <section>
+            <ul>
+                <li>
+                    <a></a>
+                </li>
+                <li></li>
+                <li></li>
+                <li></li>
+            </ul>
+        </section>
+        <ul>
+            <li>
+                <a></a>
+            </li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+        <ul>
+            <li>
+                <a></a>
+            </li>
+            <li>
+                <a></a>
+            </li>
+            <li>
+                <a></a>
+            </li>
+            <li>
+                <a></a>
+            </li>
+            <li>
+                <a></a>
+            </li>
+            <li></li>
+            <li></li>
+            <li></li>
+        </ul>
+    </div>
+</div>
+<script src="../plugins/sigma.layout.forceAtlas2/worker.js"></script>
+<script src="../plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
+<script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+<script src="../plugins/sigma.layout.noverlap/sigma.layout.noverlap.js"></script>
+<script>
+/**
+ * TODO: My description HERE
+ */
+var s,
+    nodeIdPrefix = 'n',
+    edgeIdPrefix = 'e',
+    nodeSize = 15,
+    nodeColor = '#' + (
+        Math.floor(Math.random() * 16777215).toString(16) + '000000'
+    ).substr(0, 6),
+    forceAtlas2Config,
+    SEC = 1000,
+    finaleEaseTime = 5 * SEC;
+
+s = new sigma('graph-container');
+
+forceAtlas2Config = {
+    linLogMode: false,
+    outboundAttractionDistribution: false,
+    adjustSizes: false, //true works weirdly... like the gravity moves around
+    worker: true,
+    barnesHutOptimize: false,
+    slowDown: 100,
+    gravity: 1, //keeps things in the center
+    scalingRatio: 1,
+    edgeWeightInfluence: 0, //setting to 1 makes things less free
+    startingIterations: 1,
+    iterationsPerRender: 1,
+    strongGravityMode: false //that one makes things stickier
+};
+
+// Start the ForceAtlas2 algorithm:
+s.startForceAtlas2(forceAtlas2Config);
+
+//var edgeIntervalId = setInterval(addAnEdge, 0.3*SEC, E*2);
+//var nodeIntervalId = setInterval(addNodesToEnd, 0.1*SEC, 100);
+
+//createRoot(document.documentElement);
+//recurseDomChildren(document.documentElement);
+
+//getAnotherDom('file:///workspace/3dz/sigma.js/examples/forceHTMLgraph.html');
+//var iframeDom = iframeRef( document.getElementById('one') )
+//var x = document.getElementById('iframe').contentWindow.document;
+//console.log(x);
+//console.log(document.documentElement);
+recurseBF(s, document.documentElement);
+
+
+
+
+
+
+
+
+
+
+
+
+// ----------- Lib ---------------
+function doNoverlap(graphInstance) {
+  // Configure the noverlap layout:
+  var noverlapListener = graphInstance.configNoverlap({
+    nodeMargin: 10,
+    scaleNodes: 1.05,
+    gridSize: 75,
+    easing: 'quadraticInOut', // animation transition function
+    duration: 10000   // animation duration. Long here for the purposes of this example only
+  });
+  // Bind the events:
+  noverlapListener.bind('start stop interpolate', function(e) {
+    console.log(e.type);
+    if(e.type === 'start') {
+      console.time('noverlap');
+    }
+    if(e.type === 'interpolate') {
+      console.timeEnd('noverlap');
+    }
+  });
+  // Start the layout:
+  graphInstance.startNoverlap();
+}
+
+
+function createRoot(graphInstance, domNode) {
+    if (typeof graphInstance.graph.nodes() !== 'undefined' && graphInstance.graph.nodes().length > 0) {
+        console.log("Error creating root object");
+        return;
+    }
+
+    rootId = domNode.tagName + 'tag'
+
+    graphInstance.graph.addNode({
+        id: rootId,
+        x: 0,
+        y: 0,
+        size: nodeSize,
+        label: rootId + '-0',
+        color: '#000'
+    });
+    graphInstance.refresh();
+
+    return rootId;
+}
+
+function addAnEdge(maxEdges) {
+    s.killForceAtlas2();
+    s.graph.addEdge({
+        id: 'e' + edgeCount,
+        source: o.nodes[(Math.random() * o.nodes.length) | 0],
+        target: o.nodes[(Math.random() * o.nodes.length) | 0]
+    });
+    s.startForceAtlas2();
+    edgeCount++;
+
+    if (edgeCount > maxEdges) {
+        clearInterval(edgeIntervalId);
+        console.log('stopped adding edges');
+        s.killForceAtlas2();
+        console.log('stopped force atlas');
+    }
+
+}
+
+function addNodesToEnd(maxNodes) {
+    s.killForceAtlas2();
+    allNodes = s.graph.nodes();
+    nodeCount = allNodes.length;
+    lastNode = allNodes[nodeCount - 1];
+    nodeCount++;
+
+    edgeCount = s.graph.edges().length;
+    edgeCount++;
+
+    s.graph.addNode({
+        id: nodeIdPrefix + nodeCount,
+        size: Math.random() * 5,
+        x: lastNode.x * Math.cos(2 * 30 * Math.PI / nodeCount),
+        y: lastNode.y * Math.sin(2 * 30 * Math.PI / nodeCount),
+        color: "#000"
+    });
+
+    s.graph.addEdge({
+        id: edgeIdPrefix + edgeCount,
+        source: lastNode.id,
+        target: nodeIdPrefix + nodeCount
+    });
+    s.startForceAtlas2();
+
+    if (nodeCount > maxNodes) {
+        clearInterval(nodeIntervalId);
+        console.log('stopped adding nodes');
+        s.killForceAtlas2();
+        console.log('stopped force atlas');
+
+    }
+
+}
+
+function recurseDomChildren(parent) {
+    var children;
+    if (parent.childNodes) {
+        children = parent.childNodes;
+        var child;
+
+        //Still depth first, but I connect all children to the parent first
+        //loop first, and connect all.
+        //then loop again, pick one, and connect all of it's children
+        //then ...
+        for (var i = 0; i < children.length; i++) {
+            connectNewChild(parent, children[i]);
+        }
+
+        // This is a depth first visualization
+        for (var i = 0; i < children.length; i++) {
+            child = children[i];
+
+            // if (child.nodeType === 1) {
+            //     console.log("element: " + child.tagName);
+            // }
+
+            if (child.childNodes) {
+                recurseDomChildren(child);
+                // if (child.nodeType === 1) {
+                //     console.log("closing... </" + child.tagName + ">");
+                // }
+            }
+        }
+    }
+}
+
+function recurseBF(graphInstance, treeHeadNode) {
+    rootId = createRoot(graphInstance, treeHeadNode);
+
+    var stack = [{
+        depth: 0,
+        nodeId: rootId,
+        element: treeHeadNode
+    }];
+    var stackItem = 0;
+    var current;
+    var parent;
+    var children, i, len;
+    var depth; //not really used here, but I like it
+    var childNodeId;
+
+    var nodeIntervalId = setInterval(function() {
+        if (current = stack[stackItem++]) {
+            //console.log('popping next parent from stack');
+            depth = current.depth;
+            parent = current.element;
+            parentNodeId = current.nodeId;
+            children = parent.childNodes;
+
+            for (i = 0, len = children.length; i < len; i++) {
+                if (children[i].nodeType === 1) {
+                    //console.log('adding child to stack');
+                    childNodeId = addNewChildNodeToParent(graphInstance, parent, parentNodeId, children[i]);
+                    stack.push({ //pass args via object or array
+                        element: children[i],
+                        nodeId: childNodeId,
+                        depth: depth + 1
+                    });
+                }
+
+            }
+
+        } else {
+            clearInterval(nodeIntervalId);
+            console.log('clearInterval - Stopped adding nodes');
+            //give the graph some time to finish rendering
+            setTimeout(function() {
+                graphInstance.killForceAtlas2();
+                console.log('Stopped ForceAtlas2');
+                //doNoverlap(graphInstance);
+            }, finaleEaseTime);
+        }
+
+    }, 0.1 * SEC);
+
+}
+
+// Should create a node, for every child, and create the edge between it and the parent
+function addNewChildNodeToParent(graphInstance, parent, parentNodeId, child) {
+
+    graphInstance.killForceAtlas2();
+
+    allNodes = graphInstance.graph.nodes();
+    nodeCount = allNodes.length;
+    nodeCount++;
+    childNodeId = child.tagName + '-' + nodeCount;
+    parentNode = graphInstance.graph.nodes(parentNodeId);
+
+    graphInstance.graph.addNode({
+        id: childNodeId,
+        label: childNodeId,
+        size: Math.random() * nodeSize,
+        x: parentNode.x + (Math.random() * 2) * Math.cos(2 * 10 * Math.PI / Math.random()),
+        y: parentNode.y + (Math.random() * 2) * Math.sin(2 * 10 * Math.PI / Math.random()),
+        color: '#' + intToRGB(hashCode(child.tagName)),
+        finished: false
+    });
+
+    setTimeout(function() {s.graph.nodes(childNodeId).finished = true}, 1000)
+    
+    graphInstance.graph.addEdge({
+        id: parentNodeId + '->' + childNodeId,
+        source: parentNodeId,
+        target: childNodeId
+    });
+    graphInstance.startForceAtlas2(forceAtlas2Config);
+
+    return childNodeId;
+
+}
+
+function hashCode(str) { // java String#hashCode
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return hash;
+}
+
+function intToRGB(i) {
+    var c = (i & 0x00FFFFFF)
+        .toString(16)
+        .toUpperCase();
+
+    return "00000".substring(0, 6 - c.length) + c;
+}
+
+function outputNode(node) {
+    var whitespace = /^\s+$/g;
+    if (node.nodeType === 1) {
+        console.log("element: " + node.tagName);
+    } else if (node.nodeType === 3) {
+        //clear whitespace text nodes
+        node.data = node.data.replace(whitespace, "");
+        if (node.data) {
+            //console.log("text: " + node.data); 
+        }
+    }
+}
+
+function getAnotherDom(url) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'document';
+    xhr.send();
+    xhr.onload = function(e) {
+        var doc = e.target.responseXML;
+    }
+
+    console.log('Another DOM: ' + doc);
+    return doc;
+}
+</script>

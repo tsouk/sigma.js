@@ -70,8 +70,8 @@
 var i,
     s,
     o,
-    N = 5000,
-    E = 500,
+    N = 500,
+    E = 5,
     C = 5,
     d = 0.5,
     cs = [],
@@ -133,7 +133,7 @@ s = new sigma({
 
 // Configure the noverlap layout:
 var noverlapListener = s.configNoverlap({
-  nodeMargin: 0.1,
+  nodeMargin: 10,
   scaleNodes: 1.05,
   gridSize: 75,
   easing: 'quadraticInOut', // animation transition function

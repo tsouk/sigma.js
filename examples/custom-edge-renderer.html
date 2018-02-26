@@ -46,6 +46,8 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
+<script src="../src/renderers/canvas/sigma.renderers.nodeBorder.js"></script>
+
 <div id="container">
   <style>
     #graph-container {
@@ -156,9 +158,16 @@ s = new sigma({
     // renderer type set as "canvas" is necessary here.
     container: 'graph-container',
     type: 'canvas'
+  },
+  settings: {
+    autoRescale: true,
+    drawLabels: false,
+    defaultNodeType: 'border'
   }
 });
 
 // Start the ForceAtlas2 algorithm:
 s.startForceAtlas2();
+setTimeout(function(){s.stopForceAtlas2(); console.log('stopped');}, 4*1000);
+
 </script>

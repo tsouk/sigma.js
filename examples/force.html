@@ -73,17 +73,18 @@
 var i,
     s,
     o,
-    N = 1000,
-    E = 5000,
-    C = 5,
-    d = 0.5,
+    N = 100,
+    E = 100,
+    C = 2,
+    cluster_connectivity = 0.99,
     cs = [],
     g = {
       nodes: [],
       edges: []
-    };
+    },
+    SEC = 1000;
 
-// Generate the graph:
+// Generate C graphs:
 for (i = 0; i < C; i++)
   cs.push({
     id: i,
@@ -100,14 +101,14 @@ for (i = 0; i < N; i++) {
     label: 'Node' + i,
     x: 100 * Math.cos(2 * i * Math.PI / N),
     y: 100 * Math.sin(2 * i * Math.PI / N),
-    size: Math.random(),
+    size: Math.random()*5,
     color: o.color
   });
   o.nodes.push('n' + i);
 }
 
 for (i = 0; i < E; i++) {
-  if (Math.random() < 1 - d)
+  if (Math.random() < 1 - cluster_connectivity)
     g.edges.push({
       id: 'e' + i,
       source: 'n' + ((Math.random() * N) | 0),
@@ -127,10 +128,52 @@ s = new sigma({
   graph: g,
   container: 'graph-container',
   settings: {
-    drawEdges: false
+    autoRescale: false,
+    drawLabels: false,
+    drawEdgeLabels: false
   }
 });
 
 // Start the ForceAtlas2 algorithm:
-s.startForceAtlas2({worker: true, barnesHutOptimize: false});
+s.startForceAtlas2({
+  linLogMode: true,
+  adjustSizes: false, //true works weirdly... like the gravity moves around
+  worker: true,
+  barnesHutOptimize: false, 
+  slowDown: 10, 
+  gravity: 1,
+  scalingRatio: 1,
+  edgeWeightInfluence: 0, //setting to 1 makes things less free
+  iterationsPerRender: 1,
+  strongGravityMode: false //that one makes things stickier
+  });
+
+function addAnEdge(){
+
+  s.graph.addEdge({
+    id: 'e' + edgeCount,
+    source: o.nodes[(Math.random() * o.nodes.length) | 0],
+    target: o.nodes[(Math.random() * o.nodes.length) | 0]
+  });
+  s.refresh();
+  
+  console.log('added edge: ' + edgeCount);
+  this.edgeCount++;
+
+  if (edgeCount > (E+20)) {
+    console.log('cleared');
+    clearInterval(intervalId);
+  }
+ 
+}
+
+var edgeCount = E;
+//var intervalId = setInterval(addAnEdge, 500);
+
+//try adding nodes?
+
+setTimeout(function(){s.stopForceAtlas2(); console.log('stopped');}, 10*SEC);
+
+
+
 </script>

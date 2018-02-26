@@ -46,7 +46,8 @@
 <script src="../src/misc/sigma.misc.bindDOMEvents.js"></script>
 <script src="../src/misc/sigma.misc.drawHovers.js"></script>
 <!-- END SIGMA IMPORTS -->
-<script src="../plugins/sigma.plugins.animate/sigma.plugins.animate.js"></script>
+<script src="../src/renderers/canvas/sigma.renderers.nodeBorder.js"></script>
+
 <div id="container">
   <style>
     #graph-container {
@@ -59,81 +60,148 @@
   </style>
   <div id="graph-container"></div>
 </div>
+<script src="../plugins/sigma.layout.forceAtlas2/worker.js"></script>
+<script src="../plugins/sigma.layout.forceAtlas2/supervisor.js"></script>
 <script>
+
+
 /**
- * This example shows how to use the sigma.plugins.animate plugin. It
- * creates a random graph with two different views:
+ * This is a basic example on how to develop a custom edge renderer. In
+ * this example, the renderer will display the edge as a path made of two
+ * segments, an horizontal one and a vertical one. To make it just a bit
+ * "more readable", I also used the FA2 plugin (but it is actually  still
+ * not readable).
  *
- * The circular view displays the nodes on a circle, with each node
- * having a random color and a random size.
+ * IMPORTANT: This edge renderer just works with the canvas renderer. If
+ * you do want to display images with the WebGL renderer, you will have
+ * to develop a specific WebGL edge renderer.
+ */
+sigma.utils.pkg('sigma.canvas.edges');
+sigma.canvas.edges.t = function(edge, source, target, context, settings) {
+  var color = edge.color,
+      prefix = settings('prefix') || '',
+      edgeColor = settings('edgeColor'),
+      defaultNodeColor = settings('defaultNodeColor'),
+      defaultEdgeColor = settings('defaultEdgeColor');
+
+  if (!color)
+    switch (edgeColor) {
+      case 'source':
+        color = source.color || defaultNodeColor;
+        break;
+      case 'target':
+        color = target.color || defaultNodeColor;
+        break;
+      default:
+        color = defaultEdgeColor;
+        break;
+    }
+
+  context.strokeStyle = color;
+  context.lineWidth = edge[prefix + 'size'] || 1;
+  context.beginPath();
+  context.moveTo(
+    source[prefix + 'x'],
+    source[prefix + 'y']
+  );
+  context.lineTo(
+    source[prefix + 'x'],
+    target[prefix + 'y']
+  );
+  context.lineTo(
+    target[prefix + 'x'],
+    target[prefix + 'y']
+  );
+  context.stroke();
+};
+
+
+
+/**
+ * Just a simple example to show how to use the sigma.layout.forceAtlas2
+ * plugin:
  *
- * The grid view displays every nodes with the same size, and on a grid.
- *
- * Every two seconds, the graph will be animated from a view to the other
- * one, in a one second animation.
+ * A random graph is generated, such that its nodes are separated in some
+ * distinct clusters. Each cluster has its own color, and the density of
+ * links is stronger inside the clusters. So, we expect the algorithm to
+ * regroup the nodes of each cluster.
  */
 var i,
     s,
     o,
-    L = 10,
     N = 100,
-    E = 500,
+    E = 100,
+    C = 2,
+    cluster_connectivity = 0.99,
+    cs = [],
     g = {
       nodes: [],
       edges: []
     },
-    step = 0;
+    SEC = 1000;
 
-// Generate a random graph:
-for (i = 0; i < N; i++) {
-  o = {
-    id: 'n' + i,
-    label: 'Node ' + i,
-    circular_x: L * Math.cos(Math.PI * 2 * i / N - Math.PI / 2),
-    circular_y: L * Math.sin(Math.PI * 2 * i / N - Math.PI / 2),
-    circular_size: Math.random(),
-    circular_color: '#' + (
+// Generate C graphs:
+for (i = 0; i < C; i++)
+  cs.push({
+    id: i,
+    nodes: [],
+    color: '#' + (
       Math.floor(Math.random() * 16777215).toString(16) + '000000'
-    ).substr(0, 6),
-    grid_x: i % L,
-    grid_y: Math.floor(i / L),
-    grid_size: 1,
-    grid_color: '#ccc'
-  };
-
-  ['x', 'y', 'size', 'color'].forEach(function(val) {
-    o[val] = o['grid_' + val];
+    ).substr(0, 6)
   });
 
-  g.nodes.push(o);
+for (i = 0; i < N; i++) {
+  o = cs[(Math.random() * C) | 0];
+  g.nodes.push({
+    id: 'n' + i,
+    label: 'Node' + i,
+    x: 100 * Math.cos(2 * i * Math.PI / N),
+    y: 100 * Math.sin(2 * i * Math.PI / N),
+    size: Math.random()*5,
+    color: o.color
+  });
+  o.nodes.push('n' + i);
 }
 
-for (i = 0; i < E; i++)
-  g.edges.push({
-    id: 'e' + i,
-    source: 'n' + (Math.random() * N | 0),
-    target: 'n' + (Math.random() * N | 0)
-  });
+for (i = 0; i < E; i++) {
+  if (Math.random() < 1 - cluster_connectivity)
+    g.edges.push({
+      id: 'e' + i,
+      source: 'n' + ((Math.random() * N) | 0),
+      target: 'n' + ((Math.random() * N) | 0)
+    });
+  else {
+    o = cs[(Math.random() * C) | 0]
+    g.edges.push({
+      id: 'e' + i,
+      source: o.nodes[(Math.random() * o.nodes.length) | 0],
+      target: o.nodes[(Math.random() * o.nodes.length) | 0]
+    });
+  }
+}
 
 // Instantiate sigma:
 s = new sigma({
   graph: g,
-  container: 'graph-container',
+  renderer: {
+    // IMPORTANT:
+    // This works only with the canvas renderer, so the
+    // renderer type set as "canvas" is necessary here.
+    container: 'graph-container',
+    type: 'canvas'
+  },
   settings: {
-    animationsTime: 1000
+    autoRescale: true,
+    drawLabels: false,
+    defaultEdgeType: 'curve',
+    defaultNodeType: 'border'
   }
 });
 
-setTimeout(function() {
-  var prefix = ['grid_', 'circular_'][step = +!step];
-  sigma.plugins.animate(
-    s,
-    {
-      x: prefix + 'x',
-      y: prefix + 'y',
-      size: prefix + 'size',
-      color: prefix + 'color'
-    }
-  );
-}, 2000);
+// Start the ForceAtlas2 algorithm:
+s.startForceAtlas2();
+setTimeout(function(){s.stopForceAtlas2(); console.log('stopped');}, 10*SEC);
+
+
+
 </script>
